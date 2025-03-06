@@ -63,7 +63,7 @@ class ChatScreen extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(20.0),
             child: Row(
               children: [
                 Expanded(
@@ -79,7 +79,7 @@ class ChatScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 IconButton(
-                  icon: Icon(Icons.send, color: Colors.blue),
+                  icon: Icon(Icons.send, color: Colors.yellow),
                   onPressed: () {
                     // Handle sending message
                   },

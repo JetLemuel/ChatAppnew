@@ -7,28 +7,28 @@ class InboxScreen extends StatefulWidget {
 }
 
 class _InboxScreenState extends State<InboxScreen> {
-  final List<Map<String, String>> clients = [
-    {"name": "Leo", "message": "Good afternoon", "date": "Jul"},
-    {"name": "Levi", "message": "Hello there!", "date": "Aug"},
-    {"name": "Shinra", "message": "How's it going?", "date": "Sep"},
-    {"name": "Tensei", "message": "Let's meet up.", "date": "Oct"},
+  final List<Map<String, dynamic>> clients = [
+    {"name": "Leo", "date": "Jul"},
+    {"name": "Levi", "date": "Aug"},
+    {"name": "Shinra", "date": "Sep"},
+    {"name": "Tensei", "date": "Oct"},
   ];
 
   Map<String, List<Map<String, dynamic>>> conversations = {
     "Leo": [
       {"text": "Hi Ma’am/Sir Good Afternoon", "isSent": false, "time": "2:33pm", "seen": false},
-      {"text": "Good Afternoon, How can I help?", "isSent": true, "time": "2:34pm", "seen": false},
+      {"text": "Good Afternoon, How can I help?", "isSent": false, "time": "2:34pm", "seen": false},
     ],
     "Levi": [
       {"text": "Hello there!", "isSent": false, "time": "3:00pm", "seen": false},
-      {"text": "Hi! How can I assist you?", "isSent": true, "time": "3:01pm", "seen": true},
+      {"text": "Hi! How can I assist you?", "isSent": false, "time": "3:01pm", "seen": false},
     ],
     "Shinra": [
       {"text": "How's it going?", "isSent": false, "time": "4:00pm", "seen": false},
-      {"text": "All good! What can I do for you?", "isSent": true, "time": "4:02pm", "seen": false},
+      {"text": "All good! What can I do for you?", "isSent": false, "time": "4:02pm", "seen": false},
     ],
     "Tensei": [
-      {"text": "Let's meet up.", "isSent": false, "time": "5:00pm", "seen": true},
+      {"text": "Let's meet up.", "isSent": false, "time": "5:00pm", "seen": false},
       {"text": "Sure! What time works for you?", "isSent": true, "time": "5:02pm", "seen": true},
     ],
   };
@@ -50,7 +50,12 @@ class _InboxScreenState extends State<InboxScreen> {
         itemBuilder: (context, index) {
           final client = clients[index];
           final String clientName = client["name"]!;
-          final bool lastMessageSeen = conversations[clientName]!.last["seen"];
+          final lastMessage = conversations[clientName]!.last;
+          final int unreadCount = lastMessage["isSent"]
+              ? 0
+              : conversations[clientName]!
+                  .where((msg) => !msg["isSent"] && !msg["seen"]) // Only count unseen received messages
+                  .length;
 
           return ListTile(
             leading: CircleAvatar(
@@ -58,25 +63,35 @@ class _InboxScreenState extends State<InboxScreen> {
               child: Icon(Icons.person, color: Colors.white),
             ),
             title: Text(
-              client["name"]!,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              clientName,
+              style: TextStyle(fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal),
             ),
-            subtitle: Text(client["message"]!),
+            subtitle: Text(
+              lastMessage["text"],
+              style: TextStyle(fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal),
+            ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(client["date"]!, style: TextStyle(fontWeight: FontWeight.bold)),
-                Icon(
-                  Icons.check,
-                  color: lastMessageSeen ? const Color(0xFFFEE500) : Colors.grey,
-                ),
+                unreadCount > 0
+                    ? CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          unreadCount.toString(),
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      )
+                    : Icon(Icons.check, color: lastMessage["seen"] ? const Color(0xFFFEE500) : Colors.grey),
               ],
             ),
             onTap: () {
-              // Mark all messages as seen when opening chat
               setState(() {
                 for (var msg in conversations[clientName]!) {
-                  msg["seen"] = true;
+                  if (!msg["isSent"]) {
+                    msg["seen"] = true;
+                  }
                 }
               });
 
